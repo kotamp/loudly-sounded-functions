@@ -10,6 +10,13 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "coffeescript": "^2.5.1"
+    "browser-sync": "^2.26.7",
+    "coffeescript": "^2.5.1",
+    "eruda": "^2.2.1",
+    "gulp": "^4.0.2",
+    "gulp-coffee": "^3.0.3"
+  },
+  "devDependencies": {
+    "gulp-concat": "^2.6.1"
   }
 }
