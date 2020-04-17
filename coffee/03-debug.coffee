@@ -1,8 +1,9 @@
 class Debug
-  constructor: (el, lineLimit = 30, widthLimit = 30) ->
+  constructor: (el, lineLimit = 17, widthLimit = 30) ->
     @el = el
     @history = []
     @widthLimit = widthLimit
+    @lineLimit = lineLimit
 
   log: (o) ->
     console.log o

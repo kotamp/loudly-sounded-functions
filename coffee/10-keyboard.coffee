@@ -1,12 +1,14 @@
 # events:
 #  last-changed
+#  note-on
+#  note-off
 
 class Keyboard extends EventEmitter
   constructor: (options) ->
     do super
 
-    if options.debug?
-      @_debug = options.debug
+    if options? and options.debug?
+      @debug = options.debug
 
     @list = new NoteList
     @midi = null
@@ -22,7 +24,7 @@ class Keyboard extends EventEmitter
     # setup midii
 
     if not navigator.requestMIDIAccess?
-      @_debug?.log 'midi is not supported'
+      @debug?.log 'midi is not supported'
       return this
 
     navigator
@@ -31,7 +33,7 @@ class Keyboard extends EventEmitter
             this.onMIDIError.bind(this)
 
   onMIDIError: (e) ->
-    @_debug?.log 'midi cannot initialize' + e
+    @debug?.log 'midi cannot initialize' + e
 
   onMIDISuccess: (m) ->
     @midi = m
@@ -45,8 +47,8 @@ class Keyboard extends EventEmitter
       it = inputs.next()
       count++
 
-    @_debug?.log "was found #{count} midi devices"
-    @_debug?.log "listening for new connections..."
+    @debug?.log "was found #{count} midi devices"
+    @debug?.log "listening for new connections..."
 
     m.onstatechange = this.onMIDIConnection.bind this
 
@@ -57,7 +59,7 @@ class Keyboard extends EventEmitter
        p.state == "connected" and
        p.connection == "closed"
 
-      @_debug?.log 'setting up listener'
+      @debug?.log 'setting up listener'
       p.onmidimessage = this.onMIDIMessage.bind this
 
     str = []
@@ -73,12 +75,13 @@ class Keyboard extends EventEmitter
     if p.version?
       str.push p.version
 
-    @_debug?.log '\n'
-    @_debug?.log str.join '\n'
+    @debug?.log '\n'
+    @debug?.log str.join '\n'
 
 
   onMIDIMessage: (e) ->
-    @_debug?.log 'recieve midi message'
+    @debug?.log 'recieve midi message'
+    @debug?.log event.data
     switch event.data[0] & 0xf0
       when 0x90
         if e.data[2] != 0
@@ -87,16 +90,37 @@ class Keyboard extends EventEmitter
           this.noteOff event.data[1]
       when 0x80
         this.noteOff event.data[1]
+      when 0xc0
+        @debug?.log 'goood condition'
+        this.programChange event.data[1]
 
   noteOn: (noteNumber) ->
     @list.appendNote noteNumber
-    this.emit 'last-changed', @list.last
+    @debug?.log @list.toArray()
+    this.emit(
+      'note-on',
+      noteNumber)
+    this.emit(
+      'last-changed',
+       @list.getLast())
 
   noteOff: (noteNumber) ->
     isLast = @list.isLast noteNumber
     @list.removeNote noteNumber
+    @debug?.log @list.toArray()
+
+    this.emit(
+      'note-off',
+      noteNumber)
     if isLast
-      this.emit 'last-changed', @list.last
+      this.emit(
+        'last-changed',
+        @list.getLast())
+
+  programChange: (data) ->
+    this.emit(
+      'program-change',
+      data)
 
 
 

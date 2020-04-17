@@ -1,11 +1,11 @@
 class NoteList
-  constructor: ->
+  constructor: () ->
     @list = {}
     @last = null
 
   getLast: ->
     if @last?
-      return @last.key
+      return @last.note
     else
       return null
 
@@ -32,5 +32,26 @@ class NoteList
         @last = o.prev
 
       delete @list[note]
+
   isLast: (note) ->
-    return this.list[note] == this.last
+    return @list[note] == @last
+
+  toArray: ->
+    it = @last
+    arr = []
+
+    if not it?
+      return arr
+
+    # actually do while
+    arr.push it.note
+    it = it.prev
+
+    while it?
+      arr.push it.note
+      it = it.prev
+
+    arr.reverse()
+    return arr
+
+
