@@ -1,12 +1,12 @@
 gulp = require 'gulp'
-concat = require 'gulp-concat'
 bs = require('browser-sync').create()
 coffee = require 'gulp-coffee'
+concat = require 'gulp-concat'
+uglify = require 'gulp-uglify'
 
 options =
-  coffeeSrc: './coffee/*.coffee'
-  jsDest: './js/'
-  compiledName: 'compiled.coffee'
+  src: './coffee/**.coffee'
+  dest: './js/'
 
 serve = (done) ->
   bs.init server: baseDir: './'
@@ -17,13 +17,13 @@ reload = (done) ->
   do done
 
 compile = ->
-  gulp.src options.coffeeSrc
-  .pipe concat options.compiledName
+  gulp.src options.src
   .pipe do coffee
-  .pipe gulp.dest options.jsDest
+  .pipe gulp.dest options.dest
 
 watch = (done) ->
-  gulp.watch options.coffeeSrc, gulp.series compile, reload
+  gulp.watch options.src,
+    gulp.series compile, reload
   gulp.watch ['./index.html', './lib/**'], reload
   do done
 

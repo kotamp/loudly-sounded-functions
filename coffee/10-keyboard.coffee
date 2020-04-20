@@ -7,24 +7,29 @@ class Keyboard extends EventEmitter
   constructor: (options) ->
     do super
 
-    if options? and options.debug?
-      @debug = options.debug
-
     @list = new NoteList
     @midi = null
     @input = null
 
-    # setup keyboard
-    window.addEventListener 'keydown',
-      this.onKeyDown.bind(this)
+    eve(
+      'debug',
+      null,
+      'Keyboard is launching...')
 
-    window.addEventListener 'keyup',
-      this.onKeyUp.bind(this)
+
+    # setup keyboard
+    eve.on(
+      'keyboard.keydown',
+      this.onKeyDown.bind(this))
+
+    eve.on(
+      'keyboard.keyup',
+      this.onKeyUp.bind(this))
 
     # setup midii
 
     if not navigator.requestMIDIAccess?
-      @debug?.log 'midi is not supported'
+      eve 'debug', null, 'midi is not supported'
       return this
 
     navigator
@@ -33,7 +38,11 @@ class Keyboard extends EventEmitter
             this.onMIDIError.bind(this)
 
   onMIDIError: (e) ->
-    @debug?.log 'midi cannot initialize' + e
+    eve(
+      'debug',
+      null,
+      'midi cannot be initialized',
+      e)
 
   onMIDISuccess: (m) ->
     @midi = m
@@ -47,8 +56,15 @@ class Keyboard extends EventEmitter
       it = inputs.next()
       count++
 
-    @debug?.log "was found #{count} midi devices"
-    @debug?.log "listening for new connections..."
+    eve(
+      'debug',
+      null,
+      "was found #{count} midi devices")
+
+    eve(
+      'debug',
+      null,
+      "listening for new connections...")
 
     m.onstatechange = this.onMIDIConnection.bind this
 
@@ -59,7 +75,11 @@ class Keyboard extends EventEmitter
        p.state == "connected" and
        p.connection == "closed"
 
-      @debug?.log 'setting up listener'
+      eve(
+        'debug',
+        null,
+        'setting up listener')
+
       p.onmidimessage = this.onMIDIMessage.bind this
 
     str = []
@@ -75,13 +95,14 @@ class Keyboard extends EventEmitter
     if p.version?
       str.push p.version
 
-    @debug?.log '\n'
-    @debug?.log str.join '\n'
+    eve 'debug', null, '\n'
+    eve 'debug', null, str.join '\n'
 
 
   onMIDIMessage: (e) ->
-    @debug?.log 'recieve midi message'
-    @debug?.log event.data
+    eve('debug',null,'recieve midi message')
+    eve('debug',null, event.data)
+
     switch event.data[0] & 0xf0
       when 0x90
         if e.data[2] != 0
@@ -91,47 +112,57 @@ class Keyboard extends EventEmitter
       when 0x80
         this.noteOff event.data[1]
       when 0xc0
-        @debug?.log 'goood condition'
         this.programChange event.data[1]
 
   noteOn: (noteNumber) ->
     @list.appendNote noteNumber
-    @debug?.log @list.toArray()
-    this.emit(
-      'note-on',
+
+    eve(
+      'debug',
+      null,
+      "pressed notes",
+      @list.toArray())
+
+    eve(
+      'midi.note.on'
+      this,
       noteNumber)
-    this.emit(
-      'last-changed',
-       @list.getLast())
+
+    eve(
+      'midi.last-changed',
+      this,
+      @list.getLast())
 
   noteOff: (noteNumber) ->
     isLast = @list.isLast noteNumber
     @list.removeNote noteNumber
-    @debug?.log @list.toArray()
+    
+    eve(
+      'debug',
+      null,
+      @list.toArray())
 
-    this.emit(
-      'note-off',
+    eve(
+      'midi.note.off',
+      this,
       noteNumber)
+
     if isLast
-      this.emit(
-        'last-changed',
+      eve(
+        'midi.last-changed',
+        this,
         @list.getLast())
 
   programChange: (data) ->
-    this.emit(
-      'program-change',
+    eve(
+      'midi.program-change',
+      this,
       data)
 
-
-
   onKeyDown: (e) ->
-    console.log 'down', e
+    console.log e.key
+    eve "keyboard.button.#{e.key}", null
 
   onKeyUp: (e) ->
     console.log 'up', e
 
-kb = new Keyboard
-  debug: new Debug document.getElementById 'keyboard-debug'
-kb.on 'last-changed', (note) ->
-  console.log 'last note', note
-console.log 'keyboard is listened'

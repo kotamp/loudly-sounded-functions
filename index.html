@@ -3,15 +3,27 @@
   <head>
     <title></title>
     <meta charset="utf8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--meta name="viewport" content="width=device-width,initial-scale=1.0"-->
+    <style>
+  body {
+    margin: 0;
+    color: #fff;
+    background: #000;
+  }
+#launch {
+  font-size: 5rem;
+  width: 100%;
+
+}</style>
   </head>
   <body>
-    <pre id="keyboard-debug"></pre>
+    <button id="launch" disabled>Launch</button>
+    <pre id="mode"></pre>
+    <pre id="debug"></pre>
     <div id="output"></div>
     <script src="./lib/eruda.js"></script>
-    <script>
-	    try{eruda.init();}catch(e){alert(e)}</script>
+    <script>eruda.init();</script>
     <script src="./lib/WebMIDIAPI.min.js"></script>
-    <script src="./js/compiled.js"></script>
+    <script type="module" src="./js/main.js"></script>
   </body>
 </html>

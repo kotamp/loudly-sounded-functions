@@ -1,5 +1,5 @@
 # events:
-#   sample-loaded
+#   sampler.loaded
 #
 # options:
 #   ctx:       AudioContext
@@ -12,18 +12,21 @@ class Sampler extends EventEmitter
     do super
 
     if not options?
-      console.log 'sampler: please supply ctx'
+      eve 'debug', null,
+        'sampler: please supply ctx'
       return
 
     if not options.ctx?
-      console.log 'sampler: ctx is null or undefined'
+      eve 'debug', null,
+        'sampler: ctx is null or undefined'
       return
 
     @c = options.ctx
 
     if not options.sample? or
        'String' != classof options.sample
-      console.log 'sampler: sample path is not a string'
+      eve 'debug', null,
+        'sampler: sample path is not a string'
       return
     
     @samplePath = options.sample
@@ -46,13 +49,17 @@ class Sampler extends EventEmitter
       .then (d) => @c.decodeAudioData d
       .then (b) =>
         @buffer = b
-        @emit 'sample-loaded'
+        eve 'sampler.loaded', this
       .catch (e) =>
-        @emit 'sample-error', e
+        eve 'sampler.error', this, e
 
   play: (note) ->
-    console.log "sampler: playing ", note
-    console.log "sampler: buffer duration", @buffer.duration
+    eve 'debug', null,
+      "sampler: playing ",
+      note,
+      "sampler: buffer duration",
+      @buffer.duration
+
     if note?
       offset = @shiftTable[note]
       
@@ -74,6 +81,3 @@ class Sampler extends EventEmitter
     else
       if @source?
         do @source.stop
-
-
-      
