@@ -3,6 +3,7 @@ bs = require('browser-sync').create()
 coffee = require 'gulp-coffee'
 concat = require 'gulp-concat'
 uglify = require 'gulp-uglify'
+eslint = require 'gulp-eslint'
 
 options =
   src: './coffee/**.coffee'
@@ -20,6 +21,13 @@ compile = ->
   gulp.src options.src
   .pipe do coffee
   .pipe gulp.dest options.dest
+
+lint = ->
+  gulp.src ['**/*.js', '!node_modules/**']
+  .pipe eslint
+    extends: "eslint:recommended"
+    envs: [ 'browser' ]
+  .pipe eslint.formatEach 'compact', process.stderr
 
 watch = (done) ->
   gulp.watch options.src,
