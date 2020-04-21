@@ -1,5 +1,8 @@
 import EventEmitter from './EventEmitter.js'
 import Sample from './Sample.js'
+import rand from './rand.js'
+import Set from './Set.js'
+import classof from './classof.js'
 
 export default do ->
   class BeatMachine extends EventEmitter
@@ -17,74 +20,102 @@ export default do ->
      
       @ctx = options.ctx
       @dest = options.dest
-      @bpm = options.bpm or 90
-      @minibeats = options.minibeats or 16
+      @bpm = options.bpm or 144
+      @minibeats = options.minibeats or 128
       @solidbeats = options.solidbeats or 4
+      @metronome = options.metronome or null
 
-      metronome = new Sample @ctx
-      metronome.path = './samples/metronomes/ableton-metronome.wav'
-
-      metronome.on 'loaded', =>
-        console.log 'loaded!'
-        @emit 'loaded', this
-
-      metronome.on 'error', (e) =>
-        console.log e.message
-
-      metronome.loadSample()
-
-      @samples = [metronome]
+      @samples = []
       @timings = {}
+      @playing = new Set
+
+      @count =
+        bound: 0
+        mustBeAhead: 1
+
       @startTime = 0
-      @countBinded = 0
-      @countMustReserved = 4
       @barDuration = 60 * 4 / @bpm
 
-
-    setupMetronome: ->
-      step = @minibeats // @solidbeats
-      for i in [0...@minibeats] by step
-        @timings[i] ?= []
-        @timings[i].push 0
-
-    removeMetronome: ->
-      step = @minibeats // @solidbeats
-      for i in [0...@minibeats] by step
-        @timings[i] ?= []
-        @timings[i] = @timings[i].filter (e) ->
-          e != 0
-
     start: ->
+      console.log 'start!'
       @startTime = @ctx.currentTime
+      console.log @ctx.currentTime
+      console.log @startTime
       do @update
 
     update: ->
+      console.log 'updating'
       time = @ctx.currentTime
-      console.log 'update',time,@countBinded
-      countPast = Math.ceil((time - @startTime) / @barDuration)
 
-      console.log countPast, @barDuration
-      countSetup = @countMustReserved -
-                   @countBinded +
-                   countPast
+      @count.played = Math.ceil(
+        (time - @startTime) / @barDuration
+      )
 
-      console.log @countMustReserved, countSetup,@countBinded
+      needToSetup = @count.mustBeAhead -
+        (@count.bound - @count.played)
 
-      for i in [0...countSetup]
-        t = (@countBinded + i) * @barDuration
+      ###
+      console.log 'bound:', @count.bound
+      console.log 'played: ', @count.played
+      console.log 'will setup', needToSetup
+      console.log 'duration', @barDuration
+      ###
+
+      for i in [0...needToSetup]
+        t = (@count.bound + i) * @barDuration
+        console.log @ctx.currentTime, t
         @setupBarSince t
 
-      @countBinded = @coundBinded + countSetup
+      @count.bound = @count.bound + needToSetup
 
     setupBarSince: (time) ->
-      for k,v in @timings
+      if @metronome?
+        @setupMetronome(time)
+
+      for k,v of @timings
+        console.log k, v
         shift = @barDuration / @minibeats  * (+k)
-        for index in v
-          node = @samples[index].createNode()
-          node.connect @dest
-          node.start(time+shift)
-           
+        console.log shift, @barDuration, @minibeats
+        for index in v.get()
+          @playing.add(
+            @samples[index]
+            .play @dest, time+shift, (e) =>
+              @playing.remove e.target
+          )
+
+    setupMetronome: (time) ->
+      if not (@metronome instanceof Sample)
+        throw new Error 'beat machine: metronome sample is not an instance of Sample class. It\'s ' + classof(@metronome)
+      step = @minibeats // @solidbeats
+      for i in [0...@minibeats] by step
+        shift = @barDuration / @minibeats * (+i)
+        @playing.add(
+          @metronome.play @dest,
+            time+shift, (e) =>
+              @playing.remove e.target
+        )
+
+    setSampleNow: (sample) ->
+      currentTime = @ctx.currentTime - 0.1
+      startTime = @startTime
+
+      offset = (currentTime - startTime) %
+               @barDuration / @barDuration
+
+      console.log 'hello'
+      console.log currentTime
+      console.log startTime
+      console.log @barDuration
+      console.log offset
+
+      index = Math.floor @minibeats * offset
 
 
-        
+
+      @timings[index] ?= new Set
+      @timings[index].add sample
+      
+    resetSample: (sample) ->
+      for k in Object.keys(@timings)
+        @timings[k].remove sample
 

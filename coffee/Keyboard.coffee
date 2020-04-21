@@ -112,8 +112,8 @@ export default do ->
   
     keydown: (e) ->
       @emit 'keydown', e
-      @emit "keydown.#{e.key}", e
+      @emit "keydown.#{e.code}", e
   
     keyup: (e) ->
       @emit 'keyup', e
-      @emit "keyup.#{e.key}", e
+      @emit "keyup.#{e.code}", e

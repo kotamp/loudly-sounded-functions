@@ -88,12 +88,12 @@ export default (function() {  /*
 
     keydown(e) {
       this.emit('keydown', e);
-      return this.emit(`keydown.${e.key}`, e);
+      return this.emit(`keydown.${e.code}`, e);
     }
 
     keyup(e) {
       this.emit('keyup', e);
-      return this.emit(`keyup.${e.key}`, e);
+      return this.emit(`keyup.${e.code}`, e);
     }
 
   };
