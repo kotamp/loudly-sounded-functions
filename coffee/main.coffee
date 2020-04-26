@@ -4,12 +4,16 @@ import BeatMachine from './BeatMachine.js'
 import Sample from './Sample.js'
 import rand from './rand.js'
 import BeatMachineView from './BeatMachineView.js'
+import UIRoller from './UIRoller.js'
 
 window.addEventListener 'load', ->
   button = document.getElementById 'launch'
   
   button.removeAttribute 'disabled'
   button.addEventListener 'click', ->
+
+    new UIRoller 23, 1, 123, 1, 'BPM'
+
     button.style.display = 'none'
     kb = new Keyboard
     

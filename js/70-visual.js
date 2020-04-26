@@ -1,21 +1,14 @@
-(function() {
-  var VisualAnalyser, clamp, ln1e3, ln20;
+import {
+  clamp
+} from './utils.js';
 
-  clamp = function(min, max, val) {
-    if (val < min) {
-      return min;
-    }
-    if (val > max) {
-      return max;
-    }
-    return val;
-  };
+import drawer from './Drawer.js';
 
+export default (function() {
+  var VisualAnalyser, ln1e3, ln20;
   ln20 = Math.log(20);
-
   ln1e3 = 3 * Math.log(10);
-
-  VisualAnalyser = class VisualAnalyser {
+  return VisualAnalyser = class VisualAnalyser {
     constructor(ctx, src, dest) {
       this.ctx = ctx;
       this.analyser = ctx.createAnalyser();
@@ -28,7 +21,7 @@
       this.canvas.height = 200;
       document.body.appendChild(this.canvas);
       this.cc = this.canvas.getContext('2d');
-      eve.on('animation.update', this.draw.bind(this));
+      drawer(this.draw.bind(this));
     }
 
     normX(x) {
@@ -36,7 +29,7 @@
     }
 
     normY(y) {
-      return this.canvas.height - y / 255 * this.canvas.height;
+      return canvas.width - y / 255 * canvas.height;
     }
 
     draw() {
@@ -56,5 +49,4 @@
     }
 
   };
-
-}).call(this);
+})();

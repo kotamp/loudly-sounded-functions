@@ -10,12 +10,15 @@ import rand from './rand.js';
 
 import BeatMachineView from './BeatMachineView.js';
 
+import UIRoller from './UIRoller.js';
+
 window.addEventListener('load', function() {
   var button;
   button = document.getElementById('launch');
   button.removeAttribute('disabled');
   return button.addEventListener('click', function() {
     var bm, bmv, ctx, files, i, j, kb, master, metronome, prefix, samplePicker, samples, update;
+    new UIRoller(23, 1, 123, 1, 'BPM');
     button.style.display = 'none';
     kb = new Keyboard();
     kb.on('debug', function() {

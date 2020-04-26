@@ -5,11 +5,10 @@
     <meta charset="utf8">
     <!--meta name="viewport" content="width=device-width,initial-scale=1.0"-->
     <style>
-  * {
+  body {
     margin: 0;
     color: #fff;
     background: #000;
-    font-family: sans-serif;
   }
 #launch {
   font-size: 5rem;
@@ -18,32 +17,29 @@
 
 }
 
-
-
+  div {
+    min-width: 32px;
+    min-height: 5px;
+    display: inline-block;
+  }
   .beat-row {
     display: block;
     margin-bottom: 2px;
-  }
-
-  .roller {
-    color: white;
-    font-size: 3rem;
-    padding: 20px;
-  }
-
-  .row {
-    background-color: #386;
   }
     </style>
   </head>
   <body>
     <button id="launch" disabled>Launch</button>
+    <label for="myfile">Select audio file</label>
+    <input type="file" id="myfile" name="myfile" accept="audio/*">
+    <audio controls id="audio"></audio>
     <pre id="mode"></pre>
     <pre id="debug"></pre>
     <div id="output"></div>
     <script src="./lib/eruda.js"></script>
     <script>eruda.init();</script>
     <script src="./lib/WebMIDIAPI.min.js"></script>
-    <script type="module" src="./js/main.js"></script>
+    <script src="./lib/snap.svg.js"></script>
+    <script type="module" src="./js/player.js"></script>
   </body>
 </html>
